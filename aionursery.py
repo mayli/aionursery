@@ -38,6 +38,10 @@ class Nursery:
         """
         Cancel all remaining running tasks.
         """
+        try:
+            self._parent_task = asyncio.Task.current_task(self._loop)
+        except AttributeError:
+            self._parent_task = asyncio.current_task(self._loop)
         current_task = asyncio.Task.current_task()
         for task in self._children:
             if task is current_task:
@@ -61,7 +65,10 @@ class Nursery:
     async def __aenter__(self):
         if self.closed:
             raise NurseryClosed
-        self._parent_task = asyncio.Task.current_task(self._loop)
+        try:
+            self._parent_task = asyncio.Task.current_task(self._loop)
+        except AttributeError:
+            self._parent_task = asyncio.current_task(self._loop)
         return self
 
     async def __aexit__(self, exc_type, exc, _):
